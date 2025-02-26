@@ -42,6 +42,7 @@ void startGame();
 int main() {
     startGame();
     return 0;
+    return false;
 }
 
 void startGame() {
@@ -52,6 +53,8 @@ void startGame() {
     int player2walls = Wall_Count;
     int player1Row = Board_Size - 1;
     int player2Row = 0;
+    int player1Col = Board_Size / 2;
+    int player2Col = Board_Size / 2;
     std::vector<std::vector<Player>> board = makeBoard(player1walls, player2walls, player1Row, player2Row);
     
     std::vector<Wall> walls;
@@ -91,10 +94,12 @@ void displayBoard(const std::vector<std::vector<Player>>& board, int player1wall
 
     for (int i = 0; i < Board_Size; ++i) {
         std::cout << i <<" ";
-        for (int j = 0; j < Board_Size - 1; ++j) {
+        for (int j = 0; j < Board_Size; ++j) {
             switch (board[i][j]) {
                     case Player::player1:std::cout << "1 ";
+                    break;
                     case Player::player2:std::cout << "2 ";
+                    break;
                     default:std::cout << ". ";
                         break;
                     }
@@ -113,8 +118,7 @@ void displayBoard(const std::vector<std::vector<Player>>& board, int player1wall
             std::cout << std::endl;
             if (i < Board_Size - 1 ) {
                 std::cout << " ";
-            for (int j = 0; j < Board_Size; ++i) {
-                if (j < Board_Size - 1) {
+                for (int j = 0; j < Board_Size - 1; ++j) {
                     bool horizontalWallFound = false;
                     for (const auto& wall : placedWalls) {
                         if (wall.direction == Direction::horizontal && wall.x == i && wall.y == j) {
@@ -125,13 +129,9 @@ void displayBoard(const std::vector<std::vector<Player>>& board, int player1wall
                     }
                     if (!horizontalWallFound) std::cout << " ";
                 }
-                if (j < Board_Size - 1) {
-                    std::cout << " ";
-                    }
-                }
         std::cout << std::endl;
             }
-    }
+        }
     }
 
 
@@ -149,39 +149,31 @@ void clearInputBuffer() {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-bool isValidMove(const std::vector<std::vector<Player>>& board, int currentRow, int currentCol, int newRow, int newCol, const std::vector<Wall>& placedWalls, int player1Row, int player2Row, int player1Col, int player2Col) {
-    if  (newRow < 0 || newRow >= Board_Size || newCol < 0 || newCol >= Board_Size) {
-            return false;
-        }
-        if (abs(currentRow - newRow) + abs(currentCol - newCol) > 1) {
-            if (!canJump(board, currentRow, currentCol, newRow, newCol, player1Row, player2Row, player1Col, player2Col)) {
-                return false;
+bool isWallOverlap(const std::vector<Wall>& placedWalls, const Wall& newWall) {
+    for (const auto& wall : placedWalls) {
+        if (newWall.direction == wall.direction) {
+            if (newWall.direction == Direction::horizontal && newWall.x == wall.x &&
+                abs(newWall.y - wall.y) <= 1) {
+                return true;
+            } else if (newWall.direction == Direction::vertical && newWall.y == wall.y &&
+                       std::max(newWall.x, wall.x) <= std::min(newWall.x + 1, wall.x + 1)) {
+                return true;
             }
-        } else if (abs(currentRow - newRow) + abs(currentCol - newCol) != 1) {
-            return false;
-        }
-
-        if (board[newRow][newCol] != Player::none) {
-            return false;
-        }
-        
-        for (const auto& wall : placedWalls) {
-            if (wall.direction == Direction::horizontal) {
-                if ((currentRow == newRow + 1 && wall.x == newRow && wall.y <= std::max(currentCol, newCol) && wall.y + 1 >= std::min(currentCol, newCol)) ||
-                (currentRow == newRow - 1 && wall.x == currentRow && wall.y <= std::max(currentCol, newCol) && wall.y + 1 >= std::min(currentCol, newCol))) {
-                return false;
+        }else{
+            if(newWall.direction == Direction::horizontal && newWall.x == wall.x){
+                if((newWall.y == wall.y || newWall.y == wall.y -1) && wall.x <= newWall.x && wall.x+1 >= newWall.x){
+                    return true;
                 }
-            } else {
-                if ((currentCol == newCol + 1 && wall.y == newCol && wall.x <= std::max(currentRow, newRow) && wall.x + 1 >= std::min(currentRow, newRow)) ||
-                (currentCol == newCol - 1 && wall.y == currentCol && wall.x <= std::max(currentRow, newRow) && wall.x + 1 >= std::min(currentRow, newRow))) {
-                return false;
+                if((newWall.x == wall.x || newWall.x == wall.x -1) && wall.y <= newWall.y && wall.y+1 >= newWall.y){
+                    return true;
                 }
             }
         }
-        return true;
     }
+    return false;
+}
 
-    bool isValidWallPlacement(const std::vector<std::vector<Player>> &board, const Wall& wall, const std::vector<Wall>& placedWalls, int player1Row, int player2Row, int player1walls, int player2walls){
+bool isValidWallPlacement(const std::vector<std::vector<Player>> &board, const Wall& wall, const std::vector<Wall>& placedWalls, int player1Row, int player2Row, int player1walls, int player2walls){
         if (wall.x < 0 || wall.x >= Board_Size - 1 || wall.y < 0 || wall.y >= Board_Size - 1) {
             return false;
         }
@@ -190,16 +182,16 @@ bool isValidMove(const std::vector<std::vector<Player>>& board, int currentRow, 
         }
         std::vector<Wall> tempWalls = placedWalls;
         tempWalls.push_back(wall);  
-        if (!bfs(board, player1Row, Board_Size / 2, 0, Board_Size / 2, tempWalls) || !bfs(board, player2Row, Board_Size / 2, Board_Size - 1, Board_Size / 2, tempWalls)) 
+        if (!bfs(board, player1Row, Board_Size / 2, 0, Board_Size / 2, tempWalls) || !bfs(board, player2Row, Board_Size / 2, Board_Size - 1, Board_Size / 2, tempWalls))
         {
             return false;
         }
         return true;
     }
 
-bool canReachGoal(const std::vector<std::vector<Player>>& board, int startRow, int startCol, int goalRow, const std::vector<Wall>& placedWalls) {
-    return bfs(board, startRow, startCol, goalRow, Board_Size / 2, placedWalls);
-}
+    bool canReachGoal(const std::vector<std::vector<Player>>& board, int startRow, int startCol, int goalRow, const std::vector<Wall>& placedWalls) {
+        return bfs(board, startRow, startCol, goalRow, Board_Size / 2, placedWalls);
+    }
 
 bool canJump(const std::vector<std::vector<Player>>& board, int currentRow, int currentCol, int newRow, int newCol, int player1Row, int player2Row, int player1Col, int player2Col) {
     if (abs(currentRow - newRow) == 2 && currentCol == newCol) {
@@ -218,7 +210,7 @@ bool canJump(const std::vector<std::vector<Player>>& board, int currentRow, int 
     return false;
 }
 
-bool bfs(const std::vector<std::vector<Player>>& board, int startRow, int startCol, int goalRow, int goalCol, const std::vector<Wall>& placedWalls) {
+bool bfs(const std::vector<std::vector<Player>>& board, int startRow, int startCol, int goalRow, int goalCol, const std::vector<Wall>& placedWalls, int player1Row, int player2Row, int player1Col, int player2Col) {
     std::vector<std::vector<bool>> visited(Board_Size, std::vector<bool>(Board_Size, false));
     std::queue<std::pair<int, int>> q;
     q.push({startRow, startCol});
@@ -238,36 +230,9 @@ bool bfs(const std::vector<std::vector<Player>>& board, int startRow, int startC
         for (int i = 0; i < 4; ++i){
             int newRow = row + dr[i];
             int newCol = col + dc[i];
-            if (newRow >= 0 && newRow < Board_Size && newCol >= 0 && newCol < Board_Size && !visited[newRow][newCol] && isValidMove(board, row, col, newRow, newCol, placedWalls, 0, 0, 0, 0)) {
+            if (newRow >= 0 && newRow < Board_Size && newCol >= 0 && newCol < Board_Size && !visited[newRow][newCol] && isValidMove(board, row, col, newRow, newCol, placedWalls, player1Row, player2Row, player1Col, player2Col)) {
                 visited[newRow][newCol] = true;
                 q.push({newRow, newCol});
-            }
-        }
-    }
-    return false;
-}
-
-bool isWallOverlap(const std::vector<Wall>& placedWalls, const Wall& newWall) {
-    for (const auto& wall : placedWalls) {
-        if (newWall.direction == Direction::horizontal && wall.direction == Direction::horizontal) {
-            if (newWall.x == wall.x && ((newWall.y >= wall.y && newWall.y <= wall.y + 1) || (wall.y >= newWall.y && wall.y <= newWall.y + 1))) {
-                return true;
-            }
-        } else if (newWall.direction == Direction::vertical && wall.direction == Direction::vertical) {
-            if (newWall.y == wall.y &&
-                ((newWall.x >= wall.x && newWall.x <= wall.x + 1) ||
-                 (wall.x >= newWall.x && wall.x <= newWall.x + 1))) {
-                return true;
-            }
-        } else if(newWall.direction != wall.direction){
-            if(newWall.direction == Direction::horizontal){
-                if(newWall.x == wall.x && (newWall.y == wall.y || newWall.y == wall.y-1) && wall.x <= newWall.x && wall.x+1>=newWall.x){
-                    return true;
-                }
-            } else {
-                if(newWall.y == wall.y && (newWall.x == wall.x || newWall.x == wall.x-1) && wall.y <= newWall.y && wall.y+1>=newWall.y){
-                    return true;
-                }
             }
         }
     }
@@ -296,19 +261,23 @@ bool getPlayerMove(Player currentPlayer, int& moveRow, int& moveCol, MoveType mo
         std::cin >> moveCol;
         std::cout << "Enter Wall Direction (h/v): ";
         char direction;
-        std::cin >> direction;
-        if (direction == 'h') {
-            wallDirection = Direction::horizontal;
-        } else if (direction == 'v') {
-            wallDirection = Direction::vertical;
-        } else {
-            return false;
+        while (true){
+            std::cout << "Enter Wall Direction (h/v): ";
+            std::cin >> direction;
+            if (direction == 'h') {
+                wallDirection = Direction::horizontal;
+                break;
+            } else if (direction == 'v') {
+                wallDirection = Direction::vertical;
+                break;
+            } else {
+                std::cout << "Invalid direction. Please enter 'h' or 'v'.\n";
+                clearInputBuffer();
+            }
         }
         return true;
-    } else {
-        std::cout << "Invalid Input!" << std::endl;
-        return false;
     }
+    return false; // Add this line to handle the case where neither 'm' nor 'w' is entered
 }
     
 void play(std::vector<std::vector<Player>>& board, int& player1Walls, int& player2Walls, int& player1Row, int& player2Row, std::vector<Wall>& placedWalls) {
