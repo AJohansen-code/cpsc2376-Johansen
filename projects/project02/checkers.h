@@ -1,5 +1,4 @@
-#ifndef CHECKERS_H
-#define CHECKERS_H
+#pragma once
 
 #include <vector>
 #include <iostream>
@@ -34,7 +33,7 @@ private:
 
     bool isValidMove(int startRow, int startCol, int endRow, int endCol) const;
     bool isJumpMove(int startRow, int startCol, int endRow, int endCol) const;
-    std::vector<std::pair<int, int>> getPossibleJumps (int row, int col) const;
+    std::vector<std::pair<int, int>> getPossibleJumps(int row, int col) const;
     std::vector<std::pair<int, int>> getPossibleMoves(int row, int col) const;
     bool canForceJump(Player player) const;
     void makeMove(int startRow, int startCol, int endRow, int endCol);
@@ -52,5 +51,3 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Checkers& game);
 };
-
-#endif // CHECKERS_H
