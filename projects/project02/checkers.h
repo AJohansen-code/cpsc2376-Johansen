@@ -53,4 +53,4 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Checkers& game);
 };
 
-#endif // CHECKERS_H
+
