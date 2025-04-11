@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 
-const int BOARD_SIZE = 8; // Define the board size
+const int BOARD_SIZE = 8;
 
 Checkers::Checkers() : currentPlayer(Player::WHITE), gameStatus(Status::ONGOING) {
     board.resize(BOARD_SIZE, std::vector<Piece>(BOARD_SIZE, Piece::EMPTY));
@@ -73,7 +73,6 @@ bool Checkers::isJumpMove(int startRow, int startCol, int endRow, int endCol) co
 
 std::vector<std::pair<int, int>> Checkers::getPossibleJumps(int row, int col) const {
     std::vector<std::pair<int, int>> jumps;
-    Piece piece = board[row][col];
 
     // Define jump directions
     const int dr[] = {-2, -2, 2, 2}; // Row jumps
@@ -178,13 +177,28 @@ void Checkers::updateStatus() {
     }
 }
 
+Checkers::Piece Checkers::getPieceAt(int row, int col) const {
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+        return board[row][col];
+    }
+    return Piece::EMPTY; // Return empty if out of bounds
+}
+
+void Checkers::setPieceAt(int row, int col, Piece piece) {
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+        board[row][col] = piece;
+    } else {
+        std::cerr << "Error: Attempt to set piece out of bounds (" << row << ", " << col << ")" << std::endl;
+    }
+}
+
 Checkers::Status Checkers::status() const {
     return gameStatus;
 }
 
-void Checkers::play(int startRow, int startCol, int endRow, int endCol) {
+bool Checkers::play(int startRow, int startCol, int endRow, int endCol) {
     if (gameStatus != Status::ONGOING) {
-        return;
+        return false; // Game is already over
     }
 
     if (canForceJump(currentPlayer)) {
@@ -192,19 +206,28 @@ void Checkers::play(int startRow, int startCol, int endRow, int endCol) {
             makeJump(startRow, startCol, endRow, endCol);
             updateKings();
             updateStatus();
-    }
+            return true; // move successful
         } else {
+            std::cout << "You must make a jump move!" << std::endl;
+            return false; // move failed
+        }
+    } else {
             if (isValidMove(startRow, startCol, endRow, endCol)) {
                 makeMove(startRow, startCol, endRow, endCol);
                 updateKings();
                 updateStatus();
+                return true; // move successful
             } else if (isJumpMove(startRow, startCol, endRow, endCol)) {
                 makeJump(startRow, startCol, endRow, endCol);
                 updateKings();
                 updateStatus();
-            }
+                return true; // move successful
+            } else {
+                std::cout << "Invalid move!" << std::endl;
+                return false; // move failed
         }
     }
+}
 
 void Checkers::display() const {
     std::cout << " ";
@@ -254,3 +277,4 @@ std::ostream& operator<<(std::ostream& os, const Checkers& game) {
     }
     return os;
 }
+
