@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <utility> // for std::pair
 
 class Checkers {
 public:
@@ -46,7 +47,7 @@ private:
 
 public:
     Checkers();
-    void play(int startRow, int startCol, int endRow, int endCol);
+    bool play(int startRow, int startCol, int endRow, int endCol);
     Status status() const;
     void display() const;
 
