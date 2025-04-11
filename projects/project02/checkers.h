@@ -1,5 +1,4 @@
-#ifndef CHECKERS_H
-#define CHECKERS_H
+#pragma once
 
 #include <vector>
 #include <iostream>
