@@ -11,9 +11,6 @@ This is an interactive turn-based checkers game written in C++ using SDL2. Playe
     - Press **Enter** to select a piece to move, and then press **Enter** again to move it to the selected destination.
     - Press **R** to restart the game.
     - Press **Esc** to exit the game.
-- **Mouse:**
-    - **Left-click** on a square to select a piece to move, and then **left-click** on the destination square to make the move.
-    - **Left-click** anywhere on the window after the game ends to restart (same as pressing 'R').
 
 ## 🧪 Screenshot
 
@@ -24,7 +21,7 @@ This is an interactive turn-based checkers game written in C++ using SDL2. Playe
 
 ## ✨ Extra Features
 
-- Basic keyboard and mouse controls for piece selection and movement.
+- Basic keyboard controls for piece selection and movement.
 - Visual indication of the currently selected square (green outline).
 - Visual indication of the starting square of a potential move (blue outline).
 - Displays "Red wins!", "Black wins!", or "Draw!" message when the game ends.
