@@ -1,4 +1,3 @@
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
@@ -15,8 +14,8 @@ const int SQUARE_SIZE = 60;
 int main(int argc, char* argv[]) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
-		return 1;	
-}
+		return 1;
+	}
 
 
 	SDL_Window* window = SDL_CreateWindow("Checkers", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -84,7 +83,8 @@ int main(int argc, char* argv[]) {
 								else {
 									std::cout << "Invalid selection! Select your piece." << std::endl;
 								}
-							} else {
+							}
+							else {
 								if (game.play(startRow, startCol, selectedRow, selectedCol)) {
 									if (game.canForceJump(game.getCurrentPlayer()) && game.getPossibleJumps(selectedRow, selectedCol).empty()) {
 										selectingStart = true;
@@ -100,11 +100,12 @@ int main(int argc, char* argv[]) {
 								}
 							}
 						}
-					} else {
+					}
+					else {
 						std::cout << "Game over. Press 'R' to restart." << std::endl;
 					}
 					break;
-                           
+
 				case SDLK_r:// Restart Key
 					game = Checkers();
 					selectedRow = selectedCol = -1;
@@ -120,7 +121,7 @@ int main(int argc, char* argv[]) {
 		}
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black background
 		SDL_RenderClear(renderer);
-		
+
 		game.draw(renderer, selectedRow, selectedCol, { startRow, startCol });
 
 		if (game.status() != Checkers::Status::ONGOING) {
@@ -143,8 +144,8 @@ int main(int argc, char* argv[]) {
 			else {
 				SDL_FillRect(textSurface, NULL, SDL_MapRGBA(textSurface->format, 0, 0, 0, 0)); // Transparent background
 
-				
-					std::cout << message << std::endl;
+
+				std::cout << message << std::endl;
 			}
 		}
 
@@ -158,4 +159,3 @@ int main(int argc, char* argv[]) {
 	SDL_Quit();
 	return 0;
 }
-
