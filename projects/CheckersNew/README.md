@@ -1,39 +1,39 @@
-# Project 04 – Interactive Checkers
+# Project 04 – Checkers
 
 ## 🕹️ Description
 
-This is an interactive, turn-based Checkers game implemented in C++ using the SDL2 library for graphics rendering. 
-Players take turns moving their pieces across the board, aiming to capture all of their opponent's pieces. 
-The game features keyboard controls for selecting and moving pieces, clear visual feedback, and the ability to replay after a game concludes. 
-This project builds upon the foundation of Project 02, extending the `Game` class with interactive elements and game lifecycle management.
+This is an interactive turn-based checkers game written in C++ using SDL2. Players take turns moving their pieces to capture opponent's pieces. The goal is to eliminate all of the opponent's pieces or block them from making any legal moves.
 
 ## 🎮 Controls
 
-- **Navigation:** Use the Arrow Keys (↑, ↓, ←, →) to navigate the game board and select a piece.
-- **Selection/Move:** Press the Enter key to select a piece you want to move or to confirm a valid move to an empty square.
-- **Restart:** Press the `R` key to start a new game after the current game ends.
-- **Exit:** Press the Escape key (`Esc`) to quit the game.
+- **Keyboard:**
+    - Use the **arrow keys** (Up, Down, Left, Right) to select a square.
+    - Press **Enter** to select a piece to move, and then press **Enter** again to move it to the selected destination.
+    - Press **R** to restart the game.
+    - Press **Esc** to exit the game.
+- **Mouse:**
+    - **Left-click** on a square to select a piece to move, and then **left-click** on the destination square to make the move.
+    - **Left-click** anywhere on the window after the game ends to restart (same as pressing 'R').
 
 ## 🧪 Screenshot
 
-![Screenshot](screenshot.png)
+![Checkers](https://github.com/user-attachments/assets/725f6a28-9bb1-4069-88e1-5aa3bea70e49)
+
+
+(screenshot.png)
 
 ## ✨ Extra Features
 
-- **Standard Checkers Rules:** Implements the fundamental rules of Checkers, including regular moves and mandatory jumps.
-- **Kinging:** Pieces that reach the opposite side of the board are promoted to Kings.
-- **Visual Move Highlighting:** When a piece is selected, valid moves are highlighted on the board.
-- **Turn Indicator:** Clearly displays whose turn it is.
-- **Win/Loss Display:** Upon the conclusion of the game, a clear message indicates the winner or a draw (if applicable).
-- **Keyboard-Centric Gameplay:** Designed for comfortable and intuitive gameplay using only the keyboard.
+- Basic keyboard and mouse controls for piece selection and movement.
+- Visual indication of the currently selected square (green outline).
+- Visual indication of the starting square of a potential move (blue outline).
+- Displays "Red wins!", "Black wins!", or "Draw!" message when the game ends.
+- Supports restarting the game by pressing 'R' or clicking after the game ends.
 
-## 🛠️ Engine
-
-This project may utilize and/or modify the engine provided in the following repository:
-
-[https://github.com/NicholasSeward/cpsc2376-sewardn/tree/main/projects/Project04](https://github.com/NicholasSeward/cpsc2376-sewardn/tree/main/projects/Project04)
-
-The `Game` class within this project encapsulates all the core game logic, adhering to the specifications of Project 02. 
-Input handling and SDL2 rendering are implemented outside of this core `Game` class to maintain a clean, object-oriented structure.
-
-## 📁 File Structurezl
+✅ Checklist
+    Item                       | Required
+    ---------------------------|----------
+    main.cpp, game.h, game.cpp | ✅
+    README.md with build/run instructions | ✅ (These are basic controls)
+    Screenshot image included in the same folder | ✅ (You need to add this)
+    Image inserted with Markdown syntax | ✅
