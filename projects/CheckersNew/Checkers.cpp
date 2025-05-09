@@ -9,12 +9,12 @@ const int SQUARE_SIZE = 60;
 
 void drawFilledCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
     for (int y = -radius; y <= radius; y++) {
-        for (int x = -radius; x <= radius;  x++) {
-			if ((x * x + y * y) <= (radius * radius)) {
-				SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
-			}
-		}
-	}
+        for (int x = -radius; x <= radius; x++) {
+            if ((x * x + y * y) <= (radius * radius)) {
+                SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
+            }
+        }
+    }
 }
 
 void Checkers::draw(SDL_Renderer* renderer, int selectedRow, int selectedCol, std::pair<int, int> startPos) {
@@ -131,40 +131,52 @@ Checkers::Checkers() : currentPlayer(Player::RED), gameStatus(Status::ONGOING) {
 }
 
 bool Checkers::isValidMove(int startRow, int startCol, int endRow, int endCol) const {
-    if (startRow < 0 || startRow >= BOARD_SIZE || startCol < 0 || startCol >= BOARD_SIZE ||
-        endRow < 0 || endRow >= BOARD_SIZE || endCol < 0 || endCol >= BOARD_SIZE) {
+    if (!isWithinBounds(startRow,startCol) || !isWithinBounds(endRow, endCol) ||
+        board[endRow][endCol] != Piece::EMPTY) {
         return false;
     }
-    if (board[endRow][endCol] != Piece::EMPTY) {
-        return false; // No movement
-    }
+	int deltaRow = endRow - startRow;
+	int deltaCol = std::abs(endCol - startCol);
+	Piece piece = board[startRow][startCol];
 
-    Piece piece = board[startRow][startCol];
+	if (deltaCol != 1 || std::abs(deltaRow) != 1) {
+		std::cout << "Invalid move: Not a diagonal move." << std::endl;
+		return false; // Invalid move
+	}
+
     if (currentPlayer == Player::RED) {
-        if (piece == Piece::RED && endRow > startRow && std::abs(endRow - startRow) == 1 && std::abs(endCol - startCol) == 1) {
+        if (piece == Piece::RED && deltaRow > 0) {
             return true;
         }
-        else if (piece == Piece::RED_KING && std::abs(endRow - startRow) == 1 && std::abs(endCol - startCol) == 1) {
-            return true; // Regular move for white king
-        }
-    }
-    else if (currentPlayer == Player::BLACK) {
-        if (piece == Piece::BLACK && endRow < startRow && std::abs(endRow - startRow) == 1 && std::abs(endCol - startCol) == 1) {
+        else if (piece == Piece::RED_KING) {
             return true;
         }
-        else if (piece == Piece::BLACK_KING && std::abs(endRow - startRow) == 1 && std::abs(endCol - startCol) == 1) {
+        else {
+            std::cout << "Invalid move: Regular move for red piece." << std::endl;
+        }
+    } else if (currentPlayer == Player::BLACK) {
+        if (piece == Piece::BLACK && deltaRow < 0) {
+            return true;
+        }
+        else if (piece == Piece::BLACK_KING) {
             return true; // Regular move for black king
-        }
+		}
+		else {
+			std::cout << "Invalid move: Regular move for black piece." << std::endl;
+         }
+  
     }
     return false;
 }
+
+bool Checkers::isWithinBounds(int row, int col) const {
+    return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+
 bool Checkers::isJumpMove(int startRow, int startCol, int endRow, int endCol) const {
-    if (startRow < 0 || startRow >= BOARD_SIZE || startCol < 0 || startCol >= BOARD_SIZE ||
-        endRow < 0 || endRow >= BOARD_SIZE || endCol < 0 || endCol >= BOARD_SIZE) {
+	std::cout << "isJumpMove called: start= (" << startRow << ", " << startCol << ") end=(" << endRow << "," << endCol << ") player=" << (currentPlayer == Player::RED ? "Red" : "Black") << " piece=" << static_cast<char>(board[startRow][startCol]) << std::endl;
+    if (!isWithinBounds(startRow, startCol) || !isWithinBounds(endRow, endCol) || board[endRow][endCol] != Piece::EMPTY) {
         return false;
-    }
-    if (board[endRow][endCol] != Piece::EMPTY) {
-        return false; // No movement
     }
     if (std::abs(endRow - startRow) != 2 || std::abs(endCol - startCol) != 2) {
         return false;
@@ -172,76 +184,22 @@ bool Checkers::isJumpMove(int startRow, int startCol, int endRow, int endCol) co
 
     int jumpRow = (startRow + endRow) / 2;
     int jumpCol = (startCol + endCol) / 2;
-    Piece jumpPiece = board[jumpRow][jumpCol];
+    Piece jumpedPiece = board[jumpRow][jumpCol];
+	Piece piece = board[startRow][startCol];
+
+    if (jumpedPiece == Piece::EMPTY) return false;
 
     if (currentPlayer == Player::RED) {
-        return (board[startRow][startCol] == Piece::RED || board[startRow][startCol] == Piece::RED_KING) &&
-            (jumpPiece == Piece::BLACK || jumpPiece == Piece::BLACK_KING);
+        if (piece == Piece::RED && endRow > startRow || piece == Piece::RED_KING) {
+            return (jumpedPiece == Piece::BLACK || jumpedPiece == Piece::BLACK_KING);
+        }
     }
     else if (currentPlayer == Player::BLACK) {
-        return (board[startRow][startCol] == Piece::BLACK || board[startRow][startCol] == Piece::BLACK_KING) &&
-            (jumpPiece == Piece::RED || jumpPiece == Piece::RED_KING);
-    }
-	return false;
-}
-
-std::vector<std::pair<int, int>> Checkers::getPossibleJumps(int row, int col) const {
-    std::vector<std::pair<int, int>> jumps;
-
-    // Define jump directions
-    const int dr[] = { -2, -2, 2, 2 }; // Row jumps
-    const int dc[] = { -2, 2, -2, 2 }; // Column jumps
-
-    for (int i = 0; i < 4; ++i) {
-        int newRow = row + dr[i];
-        int newCol = col + dc[i];
-        if (isJumpMove(row, col, newRow, newCol)) {
-            jumps.push_back({ newRow, newCol });
+        if (piece == Piece::BLACK && endRow < startRow || piece == Piece::BLACK_KING) {
+            return (jumpedPiece == Piece::RED || jumpedPiece == Piece::RED_KING);
         }
-    }
-    return jumps;
-}
-
-std::vector<std::pair<int, int>> Checkers::getPossibleMoves(int row, int col) const {
-    std::vector<std::pair<int, int>> moves;
-    Piece piece = board[row][col];
-    int forwardDirection = 0;
-
-	if (currentPlayer == Player::RED) {
-		forwardDirection = 1; // White moves down
-	}
-	else if (currentPlayer == Player::BLACK) {
-		forwardDirection = -1; // Black moves up
-	}
-
-    //move directions
-    const int dr[] = { -1, -1, 1, 1 }; // Define row movement directions
-    const int dc[] = { -1, 1, -1, 1 }; // Define column movement directions
-
-    for (int i = 0; i < 4; ++i) {
-        int newRow = row + dr[i];
-        int newCol = col + dc[i];
-        if (currentPlayer == Player::RED) {
-            if ((piece == Piece::RED && newRow > row) || piece == Piece::RED_KING) {
-                if (newRow >= 0 && newRow < BOARD_SIZE && newCol >= 0 && newCol < BOARD_SIZE && board[newRow][newCol] == Piece::EMPTY) {
-                    moves.push_back({ newRow, newCol });
-                }
-            }
-        }
-    }
-    return moves;
-}
-
-bool Checkers::canForceJump(Player player) const {
-    for (int i = 0; i < BOARD_SIZE; ++i) {
-        for (int j = 0; j < BOARD_SIZE; ++j) {
-            Piece piece = board[i][j];
-            if ((player == Player::RED && (piece == Piece::RED || piece == Piece::RED_KING)) ||
-                (player == Player::BLACK && (piece == Piece::BLACK || piece == Piece::BLACK_KING))) {
-                if (!getPossibleJumps(i, j).empty()) {
-                    return true;
-                }
-            }
+        else if (piece == Piece::BLACK_KING) {
+            return (jumpedPiece == Piece::RED || jumpedPiece == Piece::RED_KING);
         }
     }
     return false;
@@ -279,34 +237,47 @@ void Checkers::updateKings() {
 }
 
 void Checkers::updateStatus() {
-    bool whiteExist = false;
-    bool blackExist = false;
-    for (const auto& row : board) {
-        for (const auto& piece : row) {
+    bool redExists = false;
+    bool blackExists = false;
+	bool redCanMove = false;
+	bool blackCanMove = false;
+
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        for (int j = 0; j < BOARD_SIZE; ++j) {
+            Piece piece = board[i][j];
             if (piece == Piece::RED || piece == Piece::RED_KING) {
-                whiteExist = true;
+                redExists = true;
+                if (currentPlayer == Player::RED && (!getPossibleMoves(i, j).empty() || !getPossibleJumps(i, j).empty())) {
+                    redCanMove = true;
+                }
             }
             else if (piece == Piece::BLACK || piece == Piece::BLACK_KING) {
-                blackExist = true;
+                blackExists = true;
+                if (currentPlayer == Player::BLACK && (!getPossibleMoves(i, j).empty() || !getPossibleJumps(i, j).empty())) {
+                    blackCanMove = true;
+                }
             }
         }
     }
-    if (!whiteExist) {
+
+    if (!redExists) {
         gameStatus = Status::BLACK_WINS;
     }
-    else if (!blackExist) {
+    else if (!blackExists) {
         gameStatus = Status::RED_WINS;
     }
-    else if (!canForceJump(currentPlayer)) {
+    else if (canForceJump(currentPlayer)) {
         gameStatus = Status::ONGOING;
     }
-}
-
-Checkers::Piece Checkers::getPieceAt(int row, int col) const {
-    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-        return board[row][col];
+    else if (currentPlayer == Player::RED && !redCanMove) {
+        gameStatus = Status::BLACK_WINS; // Or DRAW depending on rules
     }
-    return Piece::EMPTY; // Return empty if out of bounds
+    else if (currentPlayer == Player::BLACK && !blackCanMove) {
+        gameStatus = Status::RED_WINS; // Or DRAW depending on rules
+    }
+    else {
+        gameStatus = Status::ONGOING;
+    }
 }
 
 void Checkers::setPieceAt(int row, int col, Piece piece) {
@@ -317,18 +288,28 @@ void Checkers::setPieceAt(int row, int col, Piece piece) {
         std::cerr << "Error: Attempt to set piece out of bounds (" << row << ", " << col << ")" << std::endl;
     }
 }
+Checkers::Piece Checkers::getPieceAt(int row, int col) const {
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+        return board[row][col];
+    }
+    return Piece::EMPTY; // Return empty if out of bounds
+}
 
 Checkers::Status Checkers::status() const {
     return gameStatus;
 }
 
 bool Checkers::play(int startRow, int startCol, int endRow, int endCol) {
+	std::cout << "Playing move from (" << startRow << ", " << startCol << ") to (" << endRow << ", " << endCol << ")" << std::endl;
     if (gameStatus != Status::ONGOING) {
+		std::cout << "Game is already over!" << std::endl;
         return false; // Game is already over
     }
 
     if (canForceJump(currentPlayer)) {
+		std::cout << "Forced jump is available." << std::endl;
         if (isJumpMove(startRow, startCol, endRow, endCol)) {
+			std::cout << "Jump move detected." << std::endl;
             makeJump(startRow, startCol, endRow, endCol);
             updateKings();
             if (!getPossibleJumps(endRow, endCol).empty()) {
@@ -338,23 +319,31 @@ bool Checkers::play(int startRow, int startCol, int endRow, int endCol) {
             else {
                 currentPlayer = (currentPlayer == Player::RED) ? Player::BLACK : Player::RED;
                 updateStatus();
+				std::cout << "No more jumps available. Switching player." << std::endl;
                 return true; // move successful
             }
-        } else {
-            std::cout << "You must make a jump move!" << std::endl;
+        }
+        else {
+            std::cout << "Invalid move: You must make a jump move!" << std::endl;
             return false; // move failed
         }
-    } else {
+    }
+    else {
+		std::cout << "No forced jump available." << std::endl;
         if (isValidMove(startRow, startCol, endRow, endCol)) {
+			std::cout << "Valid move detected." << std::endl;
             makeMove(startRow, startCol, endRow, endCol);
             updateKings();
             updateStatus();
+			std::cout << "Regular move successful, switch to next player: " << (currentPlayer == Player::RED ? "Red" : "Black") << std::endl;
             return true; // move successful
         }
         else if (isJumpMove(startRow, startCol, endRow, endCol)) {
+			std::cout << "Jump move detected." << std::endl;
             makeJump(startRow, startCol, endRow, endCol);
             updateKings();
             updateStatus();
+			std::cout << "Jump move successful, switch to next player: " << (currentPlayer == Player::RED ? "Red" : "Black") << std::endl;
             return true; // move successful
         }
         else {
@@ -389,6 +378,66 @@ void Checkers::display() const {
     }
 }
 
+bool Checkers::canForceJump(Player player) const {
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        for (int j = 0; j < BOARD_SIZE; ++j) {
+            Piece piece = board[i][j];
+            if ((player == Player::RED && (piece == Piece::RED || piece == Piece::RED_KING)) ||
+                (player == Player::BLACK && (piece == Piece::BLACK || piece == Piece::BLACK_KING))) {
+                if (!getPossibleJumps(i, j).empty()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+std::vector<std::pair<int, int>> Checkers::getPossibleJumps(int row, int col) const {
+    std::vector<std::pair<int, int>> jumps;
+
+    // Define jump directions
+    const int dr[] = { -2, -2, 2, 2 }; // Row jumps
+    const int dc[] = { -2, 2, -2, 2 }; // Column jumps
+
+    for (int i = 0; i < 4; ++i) {
+        int newRow = row + dr[i];
+        int newCol = col + dc[i];
+        if (isJumpMove(row, col, newRow, newCol)) {
+            jumps.push_back({ newRow, newCol });
+        }
+    }
+    return jumps;
+}
+
+std::vector<std::pair<int, int>> Checkers::getPossibleMoves(int row, int col) const {
+    std::vector<std::pair<int, int>> moves;
+    Piece piece = board[row][col];
+    int forwardDirection = 0;
+
+    const int dr[] = { -1, -1, 1, 1 }; // Define row movement directions
+    const int dc[] = { -1, 1, -1, 1 }; // Define column movement directions
+
+    for (int i = 0; i < 4; ++i) {
+        int newRow = row + dr[i];
+        int newCol = col + dc[i];
+
+		if (isWithinBounds(newRow, newCol) && board[newRow][newCol] == Piece::EMPTY) {
+            if (currentPlayer == Player::RED) {
+                if ((piece == Piece::RED && newRow > row) || piece == Piece::RED_KING) {
+                    moves.push_back({ newRow, newCol });
+                }
+			}
+			else if (currentPlayer == Player::BLACK) {
+				if ((piece == Piece::BLACK && newRow < row) || piece == Piece::BLACK_KING) {
+					moves.push_back({ newRow, newCol });
+				}
+			}
+        }
+    }
+    return moves;
+}
+
 std::ostream& operator<<(std::ostream& os, const Checkers& game) {
     os << " ";
     for (int i = 0; i < 8; ++i) {
@@ -415,5 +464,5 @@ std::ostream& operator<<(std::ostream& os, const Checkers& game) {
     return os;
 }
 Checkers::Player Checkers::getCurrentPlayer() const {
-	return currentPlayer;
+    return currentPlayer;
 }
