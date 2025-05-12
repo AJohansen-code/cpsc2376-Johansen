@@ -7,25 +7,29 @@ This is an interactive turn-based checkers game written in C++ using SDL2. Playe
 ## 🎮 Controls
 
 - **Keyboard:**
-    - Use the **arrow keys** (Up, Down, Left, Right) to select a square.
-    - Press **Enter** to select a piece to move, and then press **Enter** again to move it to the selected destination.
+    - Use the **Left Click:** Click on one of your pieces to select it. If the piece has valid moves, potential destination 
+      squares will be highlighted.
+    -  Click on a highlighted square to move your selected piece.
+
     - Press **R** to restart the game.
     - Press **Esc** to exit the game.
 
 ## 🧪 Screenshot
 
-![Checkers](https://github.com/user-attachments/assets/725f6a28-9bb1-4069-88e1-5aa3bea70e49)
+![Checkers](https://github.com/user-attachments/assets/d93f8511-bf6e-49f2-b5a5-f1fb5d800ed8)
+
 
 
 (screenshot.png)
 
 ## ✨ Extra Features
 
-- Basic keyboard controls for piece selection and movement.
+- **Intuitive Mouse Controls:** Easily select and move pieces with simple mouse clicks.
 - Visual indication of the currently selected square (green outline).
-- Visual indication of the starting square of a potential move (blue outline).
 - Displays "Red wins!", "Black wins!", or "Draw!" message when the game ends.
 - Supports restarting the game by pressing 'R' or clicking after the game ends.
+- **Standard Checkers Rules:** Adheres to the fundamental rules of checkers, including single and multiple jumps.
+- **Kinging:** Pieces that reach the opposite side of the board are crowned as kings, gaining the ability to move both forward and backward.
 
 ✅ Checklist
     Item                       | Required
